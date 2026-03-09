@@ -10,6 +10,9 @@ line_color : camus.Color : camus.Color{255, 255, 255, 255}
 user_pos := [2]u8 {0, 0}
 slots: [3][3]u8
 turn: u8 = 1
+winner: u8 = 0
+winner_start_end: [4]u8
+winner_color : camus.Color
 
 main :: proc() {
 	camus.debug = true
@@ -67,9 +70,19 @@ tick :: proc(delta_time: f64) {
 					center: [2]i32
 					center[0] = (640 / (3 * 4) / 2) + (640 / 3 * i32(x)) + 640 / 8
 					center[1] = (480 / (3 * 4) / 2) + (480 / 3 * i32(y)) + 480 / 8
-					camus.draw_circle(line_color, center, 480 / 7)
+					camus.draw_circle(line_color, center, 480 / 8)
 			}
 		}
+	}
+	
+	if winner != 0 {
+		line_start: [2]f32 
+		line_start[0] = (640 / 3 / 2) + (640 / 3 * f32(winner_start_end[0]))
+		line_start[1] = (480 / 3 / 2) + (480 / 3 * f32(winner_start_end[1]))
+		line_end: [2]f32 
+		line_end[0] = (640 / 3 / 2) + (640 / 3 * f32(winner_start_end[2]))
+		line_end[1] = (480 / 3 / 2) + (480 / 3 * f32(winner_start_end[3]))
+		camus.draw_line(winner_color, line_start, line_end)
 	}
 }
 
@@ -94,15 +107,80 @@ keyboard_event :: proc(event: sdl.Event) {
 						user_pos[0] += 1
 					}
 				case sdl.K_RETURN, sdl.K_KP_ENTER:
-					if slots[user_pos[0]][user_pos[1]] == 0 {
+					if winner == 0 && slots[user_pos[0]][user_pos[1]] == 0 {
 						slots[user_pos[0]][user_pos[1]] = turn
 						if turn == 1 {
 							turn = 2
 						} else {
 							turn = 1
 						}
+						check_victory()
 					}
 			}
-			
+	}
+}
+
+check_victory :: proc() {
+	for x: u8 = 0; x < 3; x += 1 {
+		for y: u8 = 0; y < 3; y += 1 {
+			// if that slot has been marked
+			if slots[x][y] != 0 {
+				// check horizontally
+				if x == 0 {
+					if slots[x][y] == slots[x + 1][y] && slots[x][y] == slots[x + 2][y] {
+						winner = slots[x][y]
+						winner_start_end[0] = x
+						winner_start_end[1] = y
+						winner_start_end[2] = x + 2
+						winner_start_end[3] = y
+						set_winner_color()
+						return
+					}
+				}
+				// check vertically
+				if y == 0 {
+					if slots[x][y] == slots[x][y + 1] && slots[x][y] == slots[x][y + 2] {
+						winner = slots[x][y]
+						winner_start_end[0] = x
+						winner_start_end[1] = y
+						winner_start_end[2] = x
+						winner_start_end[3] = y + 2
+						set_winner_color()
+						return
+					}
+				}
+				// check diagonals
+				if x == 0 && y == 0 {
+					if slots[x][y] == slots[x + 1][y + 1] && slots[x][y] == slots[x + 2][y + 2] {
+						winner = slots[x][y]
+						winner_start_end[0] = x
+						winner_start_end[1] = y
+						winner_start_end[2] = x + 2
+						winner_start_end[3] = y + 2
+						set_winner_color()
+						return
+					}
+				}
+				if x == 2 && y == 0 {
+					if slots[x][y] == slots[x - 1][y + 1] && slots[x][y] == slots[x - 2][y + 2] {
+						winner = slots[x][y]
+						winner_start_end[0] = x
+						winner_start_end[1] = y
+						winner_start_end[2] = x - 2
+						winner_start_end[3] = y + 2
+						set_winner_color()
+						return
+					}
+				}
+			}
+		}
+	}
+}
+
+set_winner_color :: proc() {
+	if winner == 1 {
+		winner_color = camus.Color{0, 0, 255, 255}
+	} else {
+		winner_color = camus.Color{255, 0, 0, 255}
 	}
 }
