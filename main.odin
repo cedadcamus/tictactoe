@@ -2,6 +2,9 @@ package main
 
 import "camus"
 import sdl "vendor:sdl3"
+import "vendor:sdl3/ttf"
+import "core:log"
+import "base:runtime"
 
 line_color : camus.Color : camus.Color{255, 255, 255, 255}
 user_pos := [2]u8 {0, 0}
@@ -10,17 +13,22 @@ turn: u8 = 1
 winner: u8 = 0
 winner_start_end: [4]u8
 winner_color : camus.Color
-game_state: GameState = GameState.GAME
+game_state: GameState = GameState.WELCOME
+
+welcome_font: ^ttf.Font
 
 
 GameState :: enum  u8 {
+	WELCOME,
 	GAME,
 }
 
 main :: proc() {
-	camus.debug = true
+	camus.debug = false
+	camus.debug_fps = false
 	camus.init = init
 	camus.tick = tick
+	camus.destroy = destroy
 	camus.keyboard_event = keyboard_event
 	camus.background_color = camus.Color{0, 0, 0, 255}
 	camus.window_size = []i32 {640, 480}
@@ -28,111 +36,25 @@ main :: proc() {
 }
 
 init :: proc () {
-	//
+	welcome_init()
 }
 
 tick :: proc(delta_time: f64) {
 	switch game_state {
+		case GameState.WELCOME:
+			welcome_tick(delta_time)
 		case GameState.GAME:
 			game_tick(delta_time)
 	}
 }
 
 keyboard_event :: proc(event: sdl.Event) {
-	#partial switch event.type {
-		case sdl.EventType.KEY_UP:
-			switch event.key.key {
-				case sdl.K_W, sdl.K_UP:
-					if user_pos[1] > 0 {
-						user_pos[1] -= 1
-					}
-				case sdl.K_A, sdl.K_LEFT:
-					if user_pos[0] > 0 {
-						user_pos[0] -= 1
-					}
-				case sdl.K_S, sdl.K_DOWN:
-					if user_pos[1] < 2 {
-						user_pos[1] += 1
-					}
-				case sdl.K_D, sdl.K_RIGHT:
-					if user_pos[0] < 2 {
-						user_pos[0] += 1
-					}
-				case sdl.K_RETURN, sdl.K_KP_ENTER:
-					if winner == 0 && slots[user_pos[0]][user_pos[1]] == 0 {
-						slots[user_pos[0]][user_pos[1]] = turn
-						if turn == 1 {
-							turn = 2
-						} else {
-							turn = 1
-						}
-						check_victory()
-					}
-			}
+	#partial switch game_state {
+		case GameState.GAME:
+			game_keyboard_event(event)
 	}
 }
 
-check_victory :: proc() {
-	for x: u8 = 0; x < 3; x += 1 {
-		for y: u8 = 0; y < 3; y += 1 {
-			// if that slot has been marked
-			if slots[x][y] != 0 {
-				// check horizontally
-				if x == 0 {
-					if slots[x][y] == slots[x + 1][y] && slots[x][y] == slots[x + 2][y] {
-						winner = slots[x][y]
-						winner_start_end[0] = x
-						winner_start_end[1] = y
-						winner_start_end[2] = x + 2
-						winner_start_end[3] = y
-						set_winner_color()
-						return
-					}
-				}
-				// check vertically
-				if y == 0 {
-					if slots[x][y] == slots[x][y + 1] && slots[x][y] == slots[x][y + 2] {
-						winner = slots[x][y]
-						winner_start_end[0] = x
-						winner_start_end[1] = y
-						winner_start_end[2] = x
-						winner_start_end[3] = y + 2
-						set_winner_color()
-						return
-					}
-				}
-				// check diagonals
-				if x == 0 && y == 0 {
-					if slots[x][y] == slots[x + 1][y + 1] && slots[x][y] == slots[x + 2][y + 2] {
-						winner = slots[x][y]
-						winner_start_end[0] = x
-						winner_start_end[1] = y
-						winner_start_end[2] = x + 2
-						winner_start_end[3] = y + 2
-						set_winner_color()
-						return
-					}
-				}
-				if x == 2 && y == 0 {
-					if slots[x][y] == slots[x - 1][y + 1] && slots[x][y] == slots[x - 2][y + 2] {
-						winner = slots[x][y]
-						winner_start_end[0] = x
-						winner_start_end[1] = y
-						winner_start_end[2] = x - 2
-						winner_start_end[3] = y + 2
-						set_winner_color()
-						return
-					}
-				}
-			}
-		}
-	}
-}
-
-set_winner_color :: proc() {
-	if winner == 1 {
-		winner_color = camus.Color{0, 0, 255, 255}
-	} else {
-		winner_color = camus.Color{255, 0, 0, 255}
-	}
+destroy :: proc() {
+	welcome_destroy()
 }
