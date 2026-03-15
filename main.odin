@@ -26,6 +26,7 @@ main :: proc() {
 	camus.debug_fps = false
 	camus.init = init
 	camus.tick = tick
+	camus.ready = ready
 	camus.destroy = destroy
 	camus.keyboard_event = keyboard_event
 	camus.background_color = camus.Color{0, 0, 0, 255}
@@ -35,6 +36,10 @@ main :: proc() {
 
 init :: proc () {
 	welcome_init()
+}
+
+ready :: proc() {
+	welcome_ready()
 }
 
 tick :: proc(delta_time: f64) {
