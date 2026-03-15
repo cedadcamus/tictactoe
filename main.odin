@@ -15,8 +15,6 @@ winner_start_end: [4]u8
 winner_color : camus.Color
 game_state: GameState = GameState.WELCOME
 
-welcome_font: ^ttf.Font
-
 
 GameState :: enum  u8 {
 	WELCOME,

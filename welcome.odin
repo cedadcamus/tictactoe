@@ -6,40 +6,27 @@ import "vendor:sdl3/ttf"
 import "core:log"
 import "base:runtime"
 
-welcome_text_surface: ^sdl.Surface
-welcome_text_texture: ^sdl.Texture
-welcome_text_rect: sdl.FRect
+welcome_title: camus.UIText
 
 
 welcome_init :: proc() {
-    welcome_font = ttf.OpenFont("Doto-VariableFont_ROND,wght.ttf", 32)
-	if welcome_font == nil {
-		camus.is_running = false
-		log.log(runtime.Logger_Level.Error, sdl.GetError())
-	}
+    camus.ui_add_font("Doto", "Doto-VariableFont_ROND,wght.ttf", 32)
     
-    color: sdl.Color
-    color.r = 0
-    color.g = 255
-    color.b = 255
-    color.a = 255
-    welcome_text_surface = ttf.RenderText_Blended(welcome_font, "Tic Tac Toe", 0, color)
-    welcome_text_texture = sdl.CreateTextureFromSurface(camus.renderer, welcome_text_surface)
-    sdl.GetTextureSize(welcome_text_texture, &welcome_text_rect.w, &welcome_text_rect.h)
+    camus.ui_init_text(&welcome_title, 0, 255, 255, 255, "Tic Tac Toe", "Doto", 32)
+    
     window_size: [2]i32 = {0, 0}
     sdl.GetWindowSize(camus.window, &window_size[0], &window_size[1])
-    welcome_text_rect.x = (f32(window_size[0]) / 2) - (welcome_text_rect.w / 2)
-    welcome_text_rect.y = 50
+    welcome_title.rect.x = (f32(window_size[0]) / 2) - (welcome_title.rect.w / 2)
+    welcome_title.rect.y = 50
+    
 }
 
 welcome_tick :: proc(delta_time: f64) {
-    sdl.RenderTexture(camus.renderer, welcome_text_texture, nil, &welcome_text_rect)
+    sdl.RenderTexture(camus.renderer, welcome_title.texture, nil, &welcome_title.rect)
 }
 
 welcome_destroy :: proc() {
-    ttf.CloseFont(welcome_font)
-    sdl.DestroySurface(welcome_text_surface)
-    sdl.DestroyTexture(welcome_text_texture)
+    sdl.DestroyTexture(welcome_title.texture)
 }
 
 /*
