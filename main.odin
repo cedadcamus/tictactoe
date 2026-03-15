@@ -6,13 +6,13 @@ import "vendor:sdl3/ttf"
 import "core:log"
 import "base:runtime"
 
-line_color : camus.Color : camus.Color{255, 255, 255, 255}
+line_color : sdl.Color : sdl.Color{255, 255, 255, 255}
 user_pos := [2]u8 {0, 0}
 slots: [3][3]u8
 turn: u8 = 1
 winner: u8 = 0
 winner_start_end: [4]u8
-winner_color : camus.Color
+winner_color : sdl.Color
 game_state: GameState = GameState.WELCOME
 
 
@@ -29,7 +29,7 @@ main :: proc() {
 	camus.ready = ready
 	camus.destroy = destroy
 	camus.keyboard_event = keyboard_event
-	camus.background_color = camus.Color{0, 0, 0, 255}
+	camus.background_color = sdl.Color{0, 0, 0, 255}
 	camus.window_size = []i32 {640, 480}
 	camus.run()
 }

@@ -18,9 +18,9 @@ game_tick :: proc(delta_time: f64) {
 	rect.y = (480 / (3 * 4) / 2) + (480 / 3 * f32(user_pos[1]))
 	rect.w = 640 / 4
 	rect.h = 480 / 4
-	player_color := camus.Color{0, 0, 255, 255}
+	player_color := sdl.Color{0, 0, 255, 255}
 	if turn == 2 {
-		player_color = camus.Color{255, 0, 0, 255}
+		player_color = sdl.Color{255, 0, 0, 255}
 	}
 	camus.draw_rect(player_color, &rect)
 	
@@ -154,8 +154,8 @@ check_victory :: proc() {
 
 set_winner_color :: proc() {
 	if winner == 1 {
-		winner_color = camus.Color{0, 0, 255, 255}
+		winner_color = sdl.Color{0, 0, 255, 255}
 	} else {
-		winner_color = camus.Color{255, 0, 0, 255}
+		winner_color = sdl.Color{255, 0, 0, 255}
 	}
 }
