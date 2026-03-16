@@ -31,6 +31,10 @@ welcome_init :: proc() {
     welcome_start_button.padding[1] = 5
     welcome_start_button.padding[2] = 5
     welcome_start_button.padding[3] = 5
+    welcome_start_button.border_width[0] = 5
+    welcome_start_button.border_width[1] = 5
+    welcome_start_button.border_width[2] = 5
+    welcome_start_button.border_width[3] = 5
     
     welcome_start_button.text.text = "Start"
     welcome_start_button.text.color.r = 255
@@ -49,8 +53,7 @@ welcome_ready :: proc() {
     camus.ui_set_button_pos(welcome_start_button, (f32(window_size[0]) / 2) - (welcome_start_button.text.rect.w / 2), f32(window_size[1]) / 2)
 }
 
-welcome_tick :: proc(delta_time: f64) {
-    //
+welcome_tick :: proc(delta_time: f64) {   
 }
 
 welcome_destroy :: proc() {
