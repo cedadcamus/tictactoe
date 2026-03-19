@@ -8,12 +8,16 @@ import "vendor:sdl3/ttf"
 
 welcome_title: ^camus.UIText
 welcome_start_button: ^camus.UIButton
+welcome_scene: ^camus.Scene
 
 welcome_init :: proc() {
 	camus.ui_add_font("Jersey", "Jersey10-Regular.ttf", 16)
 	camus.ui_add_font("Doto", "Doto-VariableFont_ROND,wght.ttf", 32)
 
-	welcome_title = camus.ui_create_text()
+	welcome_scene = new(camus.Scene)
+	camus.current_scene = welcome_scene
+
+	welcome_title = camus.ui_create_text(welcome_scene)
 	welcome_title.text = "Tic Tac Toe"
 	welcome_title.color.r = 0
 	welcome_title.color.g = 255
@@ -22,7 +26,8 @@ welcome_init :: proc() {
 	welcome_title.font_name = "Doto"
 	welcome_title.font_size = 32
 
-	welcome_start_button = camus.ui_create_button()
+	welcome_start_button = camus.ui_create_button(welcome_scene)
+	welcome_start_button.click = welcome_start
 	welcome_start_button.color.r = 128
 	welcome_start_button.color.g = 128
 	welcome_start_button.color.b = 128
@@ -65,4 +70,10 @@ welcome_tick :: proc(delta_time: f64) {
 }
 
 welcome_destroy :: proc() {
+}
+
+welcome_start :: proc(button: ^camus.UIButton) {
+	game_init()
+	camus.ui_destroy(welcome_scene)
+	game_state = GameState.GAME
 }

@@ -3,6 +3,13 @@ package main
 import "camus"
 import sdl "vendor:sdl3"
 
+game_scene: ^camus.Scene
+
+game_init :: proc() {
+	game_scene = new(camus.Scene)
+	camus.current_scene = game_scene
+}
+
 game_tick :: proc(delta_time: f64) {
 	// vertical lines
 	camus.draw_line(line_color, [2]f32{640 / 3, 0}, [2]f32{640 / 3, 480})
