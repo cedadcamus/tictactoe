@@ -1,6 +1,8 @@
 package main
 
+import "base:runtime"
 import "camus"
+import "core:log"
 import sdl "vendor:sdl3"
 
 game_scene: ^camus.Scene
@@ -105,7 +107,6 @@ game_tick :: proc(delta_time: f64) {
 		for y: i32 = 0; y < 3; y += 1 {
 			switch slots[x][y] {
 			case 1:
-				camus.set_color(line_color)
 				camus.draw_line(
 					window_24th[0] + (window_3rd[0] * f32(x)),
 					window_24th[1] + (window_3rd[1] * f32(y)),
@@ -161,16 +162,37 @@ game_keyboard_event :: proc(event: sdl.KeyboardEvent) {
 				user_pos[0] += 1
 			}
 		case sdl.K_RETURN, sdl.K_KP_ENTER:
-			if winner == 0 && slots[user_pos[0]][user_pos[1]] == 0 {
-				slots[user_pos[0]][user_pos[1]] = turn
-				if turn == 1 {
-					turn = 2
-				} else {
-					turn = 1
-				}
-				check_victory()
-			}
+			mark_position()
 		}
+	}
+}
+
+mark_position :: proc() {
+	if winner != 0 || slots[user_pos[0]][user_pos[1]] != 0 {
+		return
+	}
+	slots[user_pos[0]][user_pos[1]] = turn
+	check_victory()
+	if winner == 0 {
+		if turn == 1 {
+			turn = 2
+		} else {
+			turn = 1
+		}
+	}
+}
+
+game_mouse_motion_event :: proc(event: sdl.MouseMotionEvent) {
+	if winner != 0 {
+		return
+	}
+	user_pos[0] = u8(event.x / window_3rd[0])
+	user_pos[1] = u8(event.y / window_3rd[1])
+}
+
+game_mouse_button_event :: proc(event: sdl.MouseButtonEvent) {
+	if event.button == 1 && event.down {
+		mark_position()
 	}
 }
 

@@ -23,6 +23,8 @@ main :: proc() {
 	camus.ready = ready
 	camus.destroy = destroy
 	camus.keyboard_event = keyboard_event
+	camus.mouse_motion_event = mouse_motion_event
+	camus.mouse_button_event = mouse_button_event
 	camus.background_color = sdl.Color{0, 0, 0, 255}
 	camus.window_size = []i32{640, 480}
 	camus.window_size_event = window_size_event
@@ -58,5 +60,22 @@ destroy :: proc() {
 }
 
 window_size_event :: proc(event: sdl.WindowEvent) {
-	game_window_size_event()
+	#partial switch game_state {
+	case GameState.GAME:
+		game_window_size_event()
+	}
+}
+
+mouse_motion_event :: proc(event: sdl.MouseMotionEvent) {
+	#partial switch game_state {
+	case GameState.GAME:
+		game_mouse_motion_event(event)
+	}
+}
+
+mouse_button_event :: proc(event: sdl.MouseButtonEvent) {
+	#partial switch game_state {
+	case GameState.GAME:
+		game_mouse_button_event(event)
+	}
 }
