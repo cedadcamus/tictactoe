@@ -51,18 +51,16 @@ welcome_init :: proc() {
 }
 
 welcome_ready :: proc() {
-	window_size: [2]i32 = {0, 0}
-	sdl.GetWindowSize(camus.window, &window_size[0], &window_size[1])
 	camus.ui_set_text_pos(
 		welcome_title,
-		(f32(window_size[0]) / 2) - (welcome_title.rect.w / 2),
+		(f32(camus.window_size[0]) / 2) - (welcome_title.rect.w / 2),
 		50,
 	)
 
 	camus.ui_set_button_pos(
 		welcome_start_button,
-		(f32(window_size[0]) / 2) - (welcome_start_button.text.rect.w / 2),
-		f32(window_size[1]) / 2,
+		(f32(camus.window_size[0]) / 2) - (welcome_start_button.text.rect.w / 2),
+		f32(camus.window_size[1]) / 2,
 	)
 }
 

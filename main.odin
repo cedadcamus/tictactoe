@@ -6,13 +6,7 @@ import "core:log"
 import sdl "vendor:sdl3"
 import "vendor:sdl3/ttf"
 
-line_color: sdl.Color : sdl.Color{255, 255, 255, 255}
-user_pos := [2]u8{0, 0}
-slots: [3][3]u8
-turn: u8 = 1
 winner: u8 = 0
-winner_start_end: [4]u8
-winner_color: sdl.Color
 game_state: GameState = GameState.WELCOME
 
 
@@ -31,6 +25,7 @@ main :: proc() {
 	camus.keyboard_event = keyboard_event
 	camus.background_color = sdl.Color{0, 0, 0, 255}
 	camus.window_size = []i32{640, 480}
+	camus.window_size_event = window_size_event
 	camus.run()
 }
 
@@ -60,4 +55,8 @@ keyboard_event :: proc(event: sdl.KeyboardEvent) {
 
 destroy :: proc() {
 	welcome_destroy()
+}
+
+window_size_event :: proc(event: sdl.WindowEvent) {
+	game_window_size_event()
 }

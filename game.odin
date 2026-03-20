@@ -4,67 +4,139 @@ import "camus"
 import sdl "vendor:sdl3"
 
 game_scene: ^camus.Scene
+line_color: sdl.Color : sdl.Color{255, 255, 255, 255}
+
+vertical_lines: [8]f32
+horizontal_lines: [8]f32
+
+player_cursor_rect: sdl.FRect
+
+user_pos := [2]u8{0, 0}
+slots: [3][3]u8
+turn: u8 = 1
+winner_start_end: [4]u8
+winner_color: sdl.Color
 
 game_init :: proc() {
 	game_scene = new(camus.Scene)
 	camus.current_scene = game_scene
+	game_window_size_event()
+}
+
+window_3rd: [2]f32
+window_4th: [2]f32
+window_6th: [2]f32
+window_24th: [2]f32
+// 1/4 + 1/24 = 14/48
+window_14_48th: [2]f32
+// 1/8 + 1/24 = 8/48
+window_8_48th: [2]f32
+game_window_size_event :: proc() {
+	window_3rd[0] = camus.window_size_f[0] / 3
+	window_3rd[1] = camus.window_size_f[1] / 3
+
+	window_4th[0] = camus.window_size_f[0] / 4
+	window_4th[1] = camus.window_size_f[1] / 4
+
+	window_6th[0] = camus.window_size_f[0] / 6
+	window_6th[1] = camus.window_size_f[1] / 6
+
+	window_14_48th[0] = (camus.window_size_f[0] / 48) * 14
+	window_14_48th[1] = (camus.window_size_f[1] / 48) * 14
+
+	window_24th[0] = camus.window_size_f[0] / 24
+	window_24th[1] = camus.window_size_f[1] / 24
+
+	window_8_48th[0] = (camus.window_size_f[0] / 48) * 8
+	window_8_48th[1] = (camus.window_size_f[1] / 48) * 8
+
+	vertical_lines[0] = window_3rd[0]
+	vertical_lines[1] = 0
+	vertical_lines[2] = window_3rd[0]
+	vertical_lines[3] = camus.window_size_f[1]
+	vertical_lines[4] = window_3rd[0] * 2
+	vertical_lines[5] = 0
+	vertical_lines[6] = window_3rd[0] * 2
+	vertical_lines[7] = camus.window_size_f[1]
+
+	horizontal_lines[0] = 0
+	horizontal_lines[1] = window_3rd[1]
+	horizontal_lines[2] = camus.window_size_f[0]
+	horizontal_lines[3] = window_3rd[1]
+	horizontal_lines[4] = 0
+	horizontal_lines[5] = window_3rd[1] * 2
+	horizontal_lines[6] = camus.window_size_f[0]
+	horizontal_lines[7] = window_3rd[1] * 2
+
+
+	player_cursor_rect.w = window_4th[0]
+	player_cursor_rect.h = window_4th[1]
 }
 
 game_tick :: proc(delta_time: f64) {
-	// vertical lines
-	camus.draw_line(line_color, [2]f32{640 / 3, 0}, [2]f32{640 / 3, 480})
-	camus.draw_line(line_color, [2]f32{640 / 3 * 2, 0}, [2]f32{640 / 3 * 2, 480})
+	camus.set_color(line_color)
+	camus.draw_line(vertical_lines[0], vertical_lines[1], vertical_lines[2], vertical_lines[3])
+	camus.draw_line(vertical_lines[4], vertical_lines[5], vertical_lines[6], vertical_lines[7])
 
-	// horizontal lines
-	camus.draw_line(line_color, [2]f32{0, 480 / 3}, [2]f32{640, 480 / 3})
-	camus.draw_line(line_color, [2]f32{0, 480 / 3 * 2}, [2]f32{640, 480 / 3 * 2})
+	camus.draw_line(
+		horizontal_lines[0],
+		horizontal_lines[1],
+		horizontal_lines[2],
+		horizontal_lines[3],
+	)
+	camus.draw_line(
+		horizontal_lines[4],
+		horizontal_lines[5],
+		horizontal_lines[6],
+		horizontal_lines[7],
+	)
 
-	// player cursor
-	rect: sdl.FRect
-	rect.x = (640 / (3 * 4) / 2) + (640 / 3 * f32(user_pos[0]))
-	rect.y = (480 / (3 * 4) / 2) + (480 / 3 * f32(user_pos[1]))
-	rect.w = 640 / 4
-	rect.h = 480 / 4
+	player_cursor_rect.x = window_24th[0] + (window_3rd[0] * f32(user_pos[0]))
+	player_cursor_rect.y = window_24th[1] + (window_3rd[1] * f32(user_pos[1]))
 	player_color := sdl.Color{0, 0, 255, 255}
 	if turn == 2 {
-		player_color = sdl.Color{255, 0, 0, 255}
+		player_color.r = 255
+		player_color.b = 0
 	}
-	camus.draw_rect(player_color, &rect)
+	camus.draw_rect(player_color, &player_cursor_rect)
 
-	for x := 0; x < 3; x += 1 {
-		for y := 0; y < 3; y += 1 {
+	camus.set_color(line_color)
+	for x: i32 = 0; x < 3; x += 1 {
+		for y: i32 = 0; y < 3; y += 1 {
 			switch slots[x][y] {
 			case 1:
-				line_start: [2]f32
-				line_start[0] = (640 / (3 * 4) / 2) + (640 / 3 * f32(x))
-				line_start[1] = (480 / (3 * 4) / 2) + (480 / 3 * f32(y))
-				line_end: [2]f32
-				line_end[0] = (640 / (3 * 4) / 2) + (640 / 3 * f32(x)) + 640 / 4
-				line_end[1] = (480 / (3 * 4) / 2) + (480 / 3 * f32(y)) + 480 / 4
-				camus.draw_line(line_color, line_start, line_end)
+				camus.set_color(line_color)
+				camus.draw_line(
+					window_24th[0] + (window_3rd[0] * f32(x)),
+					window_24th[1] + (window_3rd[1] * f32(y)),
+					window_14_48th[0] + (window_3rd[0] * f32(x)),
+					window_14_48th[1] + (window_3rd[1] * f32(y)),
+				)
 
-				line_start[0] = (640 / (3 * 4) / 2) + (640 / 3 * f32(x)) + 640 / 4
-				line_start[1] = (480 / (3 * 4) / 2) + (480 / 3 * f32(y))
-				line_end[0] = (640 / (3 * 4) / 2) + (640 / 3 * f32(x))
-				line_end[1] = (480 / (3 * 4) / 2) + (480 / 3 * f32(y)) + 480 / 4
-				camus.draw_line(line_color, line_start, line_end)
+				camus.draw_line(
+					window_14_48th[0] + (window_3rd[0] * f32(x)),
+					window_24th[1] + (window_3rd[1] * f32(y)),
+					window_24th[0] + (window_3rd[0] * f32(x)),
+					window_14_48th[1] + (window_3rd[1] * f32(y)),
+				)
 			case 2:
-				center: [2]i32
-				center[0] = (640 / (3 * 4) / 2) + (640 / 3 * i32(x)) + 640 / 8
-				center[1] = (480 / (3 * 4) / 2) + (480 / 3 * i32(y)) + 480 / 8
-				camus.draw_circle(line_color, center, 480 / 8)
+				camus.draw_circle(
+					i32(window_8_48th[0]) + (i32(window_3rd[0]) * x),
+					i32(window_8_48th[1]) + (i32(window_3rd[1]) * y),
+					camus.window_size[1] / 8,
+				)
 			}
 		}
 	}
 
 	if winner != 0 {
-		line_start: [2]f32
-		line_start[0] = (640 / 3 / 2) + (640 / 3 * f32(winner_start_end[0]))
-		line_start[1] = (480 / 3 / 2) + (480 / 3 * f32(winner_start_end[1]))
-		line_end: [2]f32
-		line_end[0] = (640 / 3 / 2) + (640 / 3 * f32(winner_start_end[2]))
-		line_end[1] = (480 / 3 / 2) + (480 / 3 * f32(winner_start_end[3]))
-		camus.draw_line(winner_color, line_start, line_end)
+		camus.draw_line_color(
+			winner_color,
+			window_6th[0] + (window_3rd[0] * f32(winner_start_end[0])),
+			window_6th[1] + (window_3rd[1] * f32(winner_start_end[1])),
+			window_6th[0] + (window_3rd[0] * f32(winner_start_end[2])),
+			window_6th[1] + (window_3rd[1] * f32(winner_start_end[3])),
+		)
 	}
 }
 
