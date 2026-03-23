@@ -191,31 +191,43 @@ game_tick :: proc(delta_time: f64) {
 		return
 	}
 
-	camus.draw_line_color(
-		winner_color,
-		window_6th[0] + (window_3rd[0] * f32(winner_start_end[0])),
-		window_6th[1] + (window_3rd[1] * f32(winner_start_end[1])),
-		window_6th[0] + (window_3rd[0] * f32(winner_start_end[2])),
-		window_6th[1] + (window_3rd[1] * f32(winner_start_end[3])),
-	)
-
+	if winner < 3 {
+		camus.draw_line_color(
+			winner_color,
+			window_6th[0] + (window_3rd[0] * f32(winner_start_end[0])),
+			window_6th[1] + (window_3rd[1] * f32(winner_start_end[1])),
+			window_6th[0] + (window_3rd[0] * f32(winner_start_end[2])),
+			window_6th[1] + (window_3rd[1] * f32(winner_start_end[3])),
+		)
+	}
 	camus.draw_fill_rect(win_background, &win_background_rect)
+	if winner < 3 {
+		camus.set_color(player_color)
 
-	camus.set_color(player_color)
+		if winner == 1 {
+			camus.draw_line(
+				window_24th[0] + window_3rd[0],
+				window_24th[1] + window_4th[1] * 0.75,
+				window_14_48th[0] + window_3rd[0],
+				window_14_48th[1] + window_4th[1] * 0.75,
+			)
 
-	camus.draw_line(
-		window_24th[0] + window_3rd[0],
-		window_24th[1] + window_4th[1] * 0.75,
-		window_14_48th[0] + window_3rd[0],
-		window_14_48th[1] + window_4th[1] * 0.75,
-	)
+			camus.draw_line(
+				window_14_48th[0] + window_3rd[0],
+				window_24th[1] + window_4th[1] * 0.75,
+				window_24th[0] + window_3rd[0],
+				window_14_48th[1] + window_4th[1] * 0.75,
+			)
+		} else {
+			camus.draw_circle(
+				i32(window_8_48th[0]) + i32(window_3rd[0]),
+				i32(window_8_48th[1]) + i32(window_4th[1] * 0.75),
+				camus.window_size[1] / 8,
+			)
+		}
 
-	camus.draw_line(
-		window_14_48th[0] + window_3rd[0],
-		window_24th[1] + window_4th[1] * 0.75,
-		window_24th[0] + window_3rd[0],
-		window_14_48th[1] + window_4th[1] * 0.75,
-	)
+	}
+
 }
 
 game_keyboard_event :: proc(event: sdl.KeyboardEvent) {
@@ -257,13 +269,19 @@ mark_position :: proc() {
 			turn = 1
 		}
 	} else {
-		camus.ui_set_text_color(
-			game_wins_text,
-			player_color.r,
-			player_color.g,
-			player_color.b,
-			255,
-		)
+		if winner < 3 {
+			game_wins_text.text = "WINS"
+			camus.ui_set_text_color(
+				game_wins_text,
+				player_color.r,
+				player_color.g,
+				player_color.b,
+				255,
+			)
+		} else {
+			game_wins_text.text = "TIE"
+			camus.ui_set_text_color(game_wins_text, 0, 255, 0, 255)
+		}
 
 		game_wins_text.visible = true
 		game_restart_button.visible = true
@@ -285,10 +303,12 @@ game_mouse_button_event :: proc(event: sdl.MouseButtonEvent) {
 }
 
 check_victory :: proc() {
+	marked_slots: u8 = 0
 	for x: u8 = 0; x < 3; x += 1 {
 		for y: u8 = 0; y < 3; y += 1 {
 			// if that slot has been marked
 			if slots[x][y] != 0 {
+				marked_slots += 1
 				// check horizontally
 				if x == 0 {
 					if slots[x][y] == slots[x + 1][y] && slots[x][y] == slots[x + 2][y] {
@@ -338,6 +358,9 @@ check_victory :: proc() {
 				}
 			}
 		}
+	}
+	if marked_slots == 9 && winner == 0 {
+		winner = 3
 	}
 }
 
