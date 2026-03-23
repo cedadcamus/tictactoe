@@ -56,7 +56,12 @@ keyboard_event :: proc(event: sdl.KeyboardEvent) {
 }
 
 destroy :: proc() {
-	welcome_destroy()
+	switch game_state {
+	case GameState.WELCOME:
+		welcome_destroy()
+	case GameState.GAME:
+		game_destroy()
+	}
 }
 
 window_size_event :: proc(event: sdl.WindowEvent) {
