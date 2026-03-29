@@ -66,6 +66,8 @@ destroy :: proc() {
 
 window_size_event :: proc(event: sdl.WindowEvent) {
 	#partial switch game_state {
+	case GameState.WELCOME:
+		welcome_window_size_event()
 	case GameState.GAME:
 		game_window_size_event()
 	}

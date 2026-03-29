@@ -51,18 +51,22 @@ welcome_init :: proc() {
 	welcome_start_button.text.font_size = 24
 }
 
-welcome_ready :: proc() {
+welcome_window_size_event :: proc() {
 	camus.ui_set_text_pos(
 		welcome_title,
 		(camus.window_size_f[0] / 2) - (welcome_title.rect.w / 2),
-		50,
+		(camus.window_size_f[1] / 3),
 	)
 
 	camus.ui_set_button_pos(
 		welcome_start_button,
 		(camus.window_size_f[0] / 2) - (welcome_start_button.text.rect.w / 2),
-		camus.window_size_f[1] / 2,
+		welcome_title.rect.y + welcome_title.rect.h + 50,
 	)
+}
+
+welcome_ready :: proc() {
+	welcome_window_size_event()
 }
 
 welcome_tick :: proc(delta_time: f64) {
